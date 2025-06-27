@@ -5,6 +5,9 @@ import * as webrtc from "./webrtc.js";
 const auth = new Auth();
 const chat = new Chat();
 
+let autoOpenChatId = null;
+let autoOpenChatType = null;
+
 // Initialize the application
 async function initApp() {
   await auth.init();
@@ -484,8 +487,11 @@ async function createGroup() {
   }
 }
 
-// Open a chat conversation
+// Modify openChat to remember the last opened chat
 async function openChat(chatId, chatType) {
+  autoOpenChatId = chatId;
+  autoOpenChatType = chatType;
+
   try {
     const chatContainer = document.getElementById("chatContainer");
     chatContainer.innerHTML = `
@@ -688,9 +694,30 @@ initApp();
 // Listen for peer messages and update chat UI
 webrtc.setOnMessage(async (msg) => {
   try {
-    // Ignore the special connection message
-    if (msg === "__CONNECTED__") return;
+    // If the data channel just opened, auto-create or open a chat
+    if (msg === "__CONNECTED__") {
+      // Try to find or create a conversation with the other peer
+      // We'll use the first other user in the DB (excluding self)
+      const users = await auth.db.getAllUsers();
+      const currentUser = auth.getCurrentUser();
+      const otherUsers = users.filter((u) => u.phone !== currentUser.phone);
+      if (otherUsers.length > 0) {
+        // Try to find an existing conversation, else create one
+        let conversation = await chat.getConversationWith(otherUsers[0].phone);
+        if (!conversation) {
+          conversation = await chat.createConversation(otherUsers[0].phone);
+        }
+        autoOpenChatId = conversation.id;
+        autoOpenChatType = "conversation";
+        openChat(autoOpenChatId, autoOpenChatType);
+      } else {
+        // If no other user, just show chat app
+        renderChatApp();
+      }
+      return;
+    }
 
+    // Handle incoming chat messages
     const { chatId, content, sender } = JSON.parse(msg);
     await chat.sendMessage(chatId, content); // Save to local DB
 
@@ -704,3 +731,10 @@ webrtc.setOnMessage(async (msg) => {
     console.error("Peer message error:", e);
   }
 });
+
+// Helper for Chat class: getConversationWith
+// Add this method to your Chat class (in chat.js):
+// async getConversationWith(phone) {
+//   const conversations = await this.getConversations();
+//   return conversations.find(conv => conv.participants.includes(phone));
+// }
