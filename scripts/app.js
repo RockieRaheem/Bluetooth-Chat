@@ -694,26 +694,18 @@ initApp();
 // Listen for peer messages and update chat UI
 webrtc.setOnMessage(async (msg) => {
   try {
-    // If the data channel just opened, auto-create or open a chat
-    if (msg === "__CONNECTED__") {
-      // Try to find or create a conversation with the other peer
-      // We'll use the first other user in the DB (excluding self)
-      const users = await auth.db.getAllUsers();
-      const currentUser = auth.getCurrentUser();
-      const otherUsers = users.filter((u) => u.phone !== currentUser.phone);
-      if (otherUsers.length > 0) {
-        // Try to find an existing conversation, else create one
-        let conversation = await chat.getConversationWith(otherUsers[0].phone);
-        if (!conversation) {
-          conversation = await chat.createConversation(otherUsers[0].phone);
-        }
-        autoOpenChatId = conversation.id;
-        autoOpenChatType = "conversation";
-        openChat(autoOpenChatId, autoOpenChatType);
-      } else {
-        // If no other user, just show chat app
-        renderChatApp();
+    if (msg === "__CONNECTED__") return;
+
+    const data = JSON.parse(msg);
+    if (data.type === "user-info") {
+      // Save the peer user info to your DB
+      await auth.db.saveUser(data.user);
+      // Create or open a chat with this user
+      let conversation = await chat.getConversationWith(data.user.phone);
+      if (!conversation) {
+        conversation = await chat.createConversation(data.user.phone);
       }
+      openChat(conversation.id, "conversation");
       return;
     }
 

@@ -9,15 +9,18 @@ const rtcConfig = {
 function handleDataChannelEvents(channel) {
   channel.onopen = () => {
     console.log("Data channel open!");
-    // You can call a callback or update the UI here
     if (onMessageCallback) onMessageCallback("__CONNECTED__");
+    // Send my user info to the peer
+    if (window.auth && window.auth.getCurrentUser) {
+      const me = window.auth.getCurrentUser();
+      channel.send(JSON.stringify({ type: "user-info", user: me }));
+    }
   };
   channel.onclose = () => {
     console.log("Data channel closed!");
   };
 }
 
-// In createOffer:
 export async function createOffer(setOffer) {
   localConnection = new RTCPeerConnection(rtcConfig);
   dataChannel = localConnection.createDataChannel("chat");
@@ -35,7 +38,6 @@ export async function createOffer(setOffer) {
   });
 }
 
-// In receiveOffer:
 export async function receiveOffer(offerString, setAnswer) {
   if (!offerString) {
     alert("Please paste a valid offer before clicking Receive Offer.");
@@ -69,7 +71,17 @@ export async function receiveOffer(offerString, setAnswer) {
 }
 
 export async function finalizeConnection(answerString) {
-  const answer = JSON.parse(answerString);
+  if (!answerString) {
+    alert("Please paste a valid answer before clicking Finalize Connection.");
+    return;
+  }
+  let answer;
+  try {
+    answer = JSON.parse(answerString);
+  } catch (e) {
+    alert("Invalid answer format. Please check and try again.");
+    return;
+  }
   await localConnection.setRemoteDescription(answer);
 }
 
