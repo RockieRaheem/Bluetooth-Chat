@@ -37,6 +37,18 @@ export async function createOffer(setOffer) {
 
 // In receiveOffer:
 export async function receiveOffer(offerString, setAnswer) {
+  if (!offerString) {
+    alert("Please paste a valid offer before clicking Receive Offer.");
+    return;
+  }
+  let offer;
+  try {
+    offer = JSON.parse(offerString);
+  } catch (e) {
+    alert("Invalid offer format. Please check and try again.");
+    return;
+  }
+
   remoteConnection = new RTCPeerConnection(rtcConfig);
   remoteConnection.ondatachannel = (event) => {
     dataChannel = event.channel;
@@ -44,7 +56,6 @@ export async function receiveOffer(offerString, setAnswer) {
     handleDataChannelEvents(dataChannel);
   };
 
-  const offer = JSON.parse(offerString);
   await remoteConnection.setRemoteDescription(offer);
   await remoteConnection.setLocalDescription(await remoteConnection.createAnswer());
 
