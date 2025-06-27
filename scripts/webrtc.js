@@ -11,13 +11,15 @@ export async function createOffer(setOffer) {
   dataChannel = localConnection.createDataChannel("chat");
   dataChannel.onmessage = (e) => onMessageCallback && onMessageCallback(e.data);
 
-  const offer = await localConnection.createOffer();
-  await localConnection.setLocalDescription(offer);
+  await localConnection.setLocalDescription(await localConnection.createOffer());
 
-  localConnection.onicecandidate = (event) => {
-    if (event.candidate === null)
+  localConnection.onicecandidate = null; // We'll use icegatheringstatechange instead
+
+  localConnection.addEventListener("icegatheringstatechange", () => {
+    if (localConnection.iceGatheringState === "complete") {
       setOffer(JSON.stringify(localConnection.localDescription));
-  };
+    }
+  });
 }
 
 export async function receiveOffer(offerString, setAnswer) {
@@ -30,13 +32,15 @@ export async function receiveOffer(offerString, setAnswer) {
 
   const offer = JSON.parse(offerString);
   await remoteConnection.setRemoteDescription(offer);
-  const answer = await remoteConnection.createAnswer();
-  await remoteConnection.setLocalDescription(answer);
+  await remoteConnection.setLocalDescription(await remoteConnection.createAnswer());
 
-  remoteConnection.onicecandidate = (event) => {
-    if (event.candidate === null)
+  remoteConnection.onicecandidate = null;
+
+  remoteConnection.addEventListener("icegatheringstatechange", () => {
+    if (remoteConnection.iceGatheringState === "complete") {
       setAnswer(JSON.stringify(remoteConnection.localDescription));
-  };
+    }
+  });
 }
 
 export async function finalizeConnection(answerString) {
