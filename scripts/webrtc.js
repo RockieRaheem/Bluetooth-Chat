@@ -75,6 +75,10 @@ export async function finalizeConnection(answerString) {
     alert("Please paste a valid answer before clicking Finalize Connection.");
     return;
   }
+  if (!localConnection) {
+    alert("You must be the user who created the offer to finalize the connection.");
+    return;
+  }
   let answer;
   try {
     answer = JSON.parse(answerString);

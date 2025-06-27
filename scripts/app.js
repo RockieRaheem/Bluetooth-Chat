@@ -4,9 +4,7 @@ import * as webrtc from "./webrtc.js";
 
 const auth = new Auth();
 const chat = new Chat();
-
-let autoOpenChatId = null;
-let autoOpenChatType = null;
+window.auth = auth; // Make auth globally accessible for webrtc.js
 
 // Initialize the application
 async function initApp() {
@@ -49,9 +47,13 @@ function renderAuthScreen() {
 function renderAuthForm(isSignup = true) {
   const authForm = document.getElementById("authForm");
   authForm.innerHTML = `
-    <h4 class="mb-4 text-center">${isSignup ? "Create Account" : "Login to Chat"}</h4>
+    <h4 class="mb-4 text-center">${
+      isSignup ? "Create Account" : "Login to Chat"
+    }</h4>
     <form id="${isSignup ? "signupForm" : "loginForm"}">
-      ${isSignup ? `
+      ${
+        isSignup
+          ? `
         <div class="mb-3">
           <label class="form-label">Username</label>
           <input type="text" class="form-control" id="username" required>
@@ -67,7 +69,9 @@ function renderAuthForm(isSignup = true) {
           </div>
           <input type="hidden" id="avatar" value="A">
         </div>
-      ` : ""}
+      `
+          : ""
+      }
       <div class="mb-3">
         <label class="form-label">Phone Number</label>
         <div class="input-group">
@@ -83,9 +87,10 @@ function renderAuthForm(isSignup = true) {
       </div>
     </form>
     <div class="login-prompt">
-      ${isSignup
-        ? 'Already have an account? <a href="#" id="loginLink">Login here</a>'
-        : 'New to ChatUganda? <a href="#" id="signupLink">Create an account</a>'
+      ${
+        isSignup
+          ? 'Already have an account? <a href="#" id="loginLink">Login here</a>'
+          : 'New to ChatUganda? <a href="#" id="signupLink">Create an account</a>'
       }
     </div>
   `;
@@ -144,7 +149,9 @@ function renderChatApp() {
         <!-- Sidebar -->
         <div class="col-md-3 d-flex flex-column sidebar">
           <div class="profile-section">
-            <div class="profile-avatar" style="background-color: ${getColorFromChar(currentUser.avatar)}">
+            <div class="profile-avatar" style="background-color: ${getColorFromChar(
+              currentUser.avatar
+            )}">
               ${currentUser.avatar}
             </div>
             <h5 class="mb-0">${currentUser.username}</h5>
@@ -210,19 +217,29 @@ function renderChatApp() {
   `;
   loadChats();
   document.getElementById("newChatBtn").addEventListener("click", startNewChat);
-  document.getElementById("startNewChatBtn").addEventListener("click", startNewChat);
+  document
+    .getElementById("startNewChatBtn")
+    .addEventListener("click", startNewChat);
   document.getElementById("logoutBtn").addEventListener("click", () => {
     auth.logout();
     renderAuthScreen();
   });
-  document.getElementById("peerConnectBtn").addEventListener("click", showPeerModal);
+  document
+    .getElementById("peerConnectBtn")
+    .addEventListener("click", showPeerModal);
 }
 
 // Get color based on character for avatar
 function getColorFromChar(char) {
   const colors = [
-    "#6f42c1", "#20c997", "#fd7e14", "#e83e8c",
-    "#0dcaf0", "#198754", "#ffc107", "#0d6efd"
+    "#6f42c1",
+    "#20c997",
+    "#fd7e14",
+    "#e83e8c",
+    "#0dcaf0",
+    "#198754",
+    "#ffc107",
+    "#0d6efd",
   ];
   const index = char.charCodeAt(0) % colors.length;
   return colors[index];
@@ -231,7 +248,8 @@ function getColorFromChar(char) {
 // Load chats for the sidebar
 async function loadChats() {
   const chatList = document.getElementById("chatList");
-  chatList.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-light" role="status"></div></div>';
+  chatList.innerHTML =
+    '<div class="text-center py-4"><div class="spinner-border text-light" role="status"></div></div>';
   try {
     const conversations = await chat.getConversations();
     const groups = await chat.getGroups();
@@ -263,7 +281,9 @@ async function loadChats() {
           <div class="list-group-item chat-item bg-transparent border-0 text-white d-flex align-items-center" 
             data-id="${chatItem.id}" data-type="conversation">
             <div class="position-relative me-3">
-              <div class="user-avatar" style="background-color: ${getColorFromChar(otherUser.avatar)}">
+              <div class="user-avatar" style="background-color: ${getColorFromChar(
+                otherUser.avatar
+              )}">
                 ${otherUser.avatar}
               </div>
             </div>
@@ -363,7 +383,9 @@ async function startNewChat() {
                   (user) => `
                   <div class="list-group-item list-group-item-action d-flex align-items-center contact-item" 
                     data-phone="${user.phone}">
-                    <div class="user-avatar me-3" style="background-color: ${getColorFromChar(user.avatar)}">
+                    <div class="user-avatar me-3" style="background-color: ${getColorFromChar(
+                      user.avatar
+                    )}">
                       ${user.avatar}
                     </div>
                     <div>
@@ -392,7 +414,9 @@ async function startNewChat() {
         openChat(conversation.id, "conversation");
       });
     });
-    document.getElementById("createGroupBtn").addEventListener("click", createGroup);
+    document
+      .getElementById("createGroupBtn")
+      .addEventListener("click", createGroup);
   } catch (error) {
     console.error("Error starting new chat:", error);
     alert("Failed to start new chat");
@@ -433,9 +457,15 @@ async function createGroup() {
                     (user) => `
                     <div class="list-group-item d-flex align-items-center">
                       <div class="form-check flex-grow-1">
-                        <input class="form-check-input" type="checkbox" value="${user.phone}" id="user-${user.phone}">
-                        <label class="form-check-label d-flex align-items-center" for="user-${user.phone}">
-                          <div class="user-avatar me-3" style="background-color: ${getColorFromChar(user.avatar)}">
+                        <input class="form-check-input" type="checkbox" value="${
+                          user.phone
+                        }" id="user-${user.phone}">
+                        <label class="form-check-label d-flex align-items-center" for="user-${
+                          user.phone
+                        }">
+                          <div class="user-avatar me-3" style="background-color: ${getColorFromChar(
+                            user.avatar
+                          )}">
                             ${user.avatar}
                           </div>
                           <div>
@@ -459,39 +489,40 @@ async function createGroup() {
         </div>
       </div>
     `;
-    document.getElementById("createGroupSubmit").addEventListener("click", async () => {
-      const groupName = document.getElementById("groupName").value;
-      if (!groupName) {
-        alert("Please enter a group name");
-        return;
-      }
-      const selectedMembers = [];
-      document.querySelectorAll("#groupMemberList input:checked").forEach((checkbox) => {
-        selectedMembers.push(checkbox.value);
+    document
+      .getElementById("createGroupSubmit")
+      .addEventListener("click", async () => {
+        const groupName = document.getElementById("groupName").value;
+        if (!groupName) {
+          alert("Please enter a group name");
+          return;
+        }
+        const selectedMembers = [];
+        document
+          .querySelectorAll("#groupMemberList input:checked")
+          .forEach((checkbox) => {
+            selectedMembers.push(checkbox.value);
+          });
+        if (selectedMembers.length === 0) {
+          alert("Please select at least one member");
+          return;
+        }
+        try {
+          const group = await chat.createGroup(groupName, selectedMembers);
+          openChat(group.id, "group");
+        } catch (error) {
+          console.error("Error creating group:", error);
+          alert("Failed to create group");
+        }
       });
-      if (selectedMembers.length === 0) {
-        alert("Please select at least one member");
-        return;
-      }
-      try {
-        const group = await chat.createGroup(groupName, selectedMembers);
-        openChat(group.id, "group");
-      } catch (error) {
-        console.error("Error creating group:", error);
-        alert("Failed to create group");
-      }
-    });
   } catch (error) {
     console.error("Error creating group:", error);
     alert("Failed to create group");
   }
 }
 
-// Modify openChat to remember the last opened chat
+// Open a chat conversation
 async function openChat(chatId, chatType) {
-  autoOpenChatId = chatId;
-  autoOpenChatType = chatType;
-
   try {
     const chatContainer = document.getElementById("chatContainer");
     chatContainer.innerHTML = `
@@ -523,7 +554,9 @@ async function openChat(chatId, chatType) {
         </form>
       </div>
     `;
-    document.getElementById("backToChats").addEventListener("click", renderChatApp);
+    document
+      .getElementById("backToChats")
+      .addEventListener("click", renderChatApp);
 
     let chatTitle = "";
     let avatarContent = "";
@@ -536,7 +569,9 @@ async function openChat(chatId, chatType) {
       if (otherUser) {
         chatTitle = otherUser.username;
         avatarContent = `
-          <div class="user-avatar me-3" style="background-color: ${getColorFromChar(otherUser.avatar)}">
+          <div class="user-avatar me-3" style="background-color: ${getColorFromChar(
+            otherUser.avatar
+          )}">
             ${otherUser.avatar}
           </div>
         `;
@@ -552,34 +587,38 @@ async function openChat(chatId, chatType) {
         `;
       }
     }
-    document.getElementById("chatTitle").innerHTML = `${avatarContent}${chatTitle}`;
+    document.getElementById(
+      "chatTitle"
+    ).innerHTML = `${avatarContent}${chatTitle}`;
 
     const messages = await chat.db.getMessages(chatId);
     renderMessages(messages);
 
-    document.getElementById("messageForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const messageInput = document.getElementById("messageInput");
-      const content = messageInput.value.trim();
-      if (content) {
-        try {
-          await chat.sendMessage(chatId, content);
-          webrtc.sendPeerMessage(
-            JSON.stringify({
-              chatId,
-              content,
-              sender: auth.getCurrentUser().phone,
-            })
-          );
-          messageInput.value = "";
-          const updatedMessages = await chat.db.getMessages(chatId);
-          renderMessages(updatedMessages);
-        } catch (error) {
-          console.error("Error sending message:", error);
-          alert("Failed to send message");
+    document
+      .getElementById("messageForm")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const messageInput = document.getElementById("messageInput");
+        const content = messageInput.value.trim();
+        if (content) {
+          try {
+            await chat.sendMessage(chatId, content);
+            webrtc.sendPeerMessage(
+              JSON.stringify({
+                chatId,
+                content,
+                sender: auth.getCurrentUser().phone,
+              })
+            );
+            messageInput.value = "";
+            const updatedMessages = await chat.db.getMessages(chatId);
+            renderMessages(updatedMessages);
+          } catch (error) {
+            console.error("Error sending message:", error);
+            alert("Failed to send message");
+          }
         }
-      }
-    });
+      });
   } catch (error) {
     console.error("Error opening chat:", error);
     alert("Failed to open chat");
@@ -688,45 +727,39 @@ function showPeerModal() {
   };
 }
 
-// Start the application
-initApp();
-
-// Listen for peer messages and update chat UI
+// Replace ONLY the webrtc.setOnMessage handler at the bottom with this:
 webrtc.setOnMessage(async (msg) => {
   try {
     if (msg === "__CONNECTED__") return;
 
     const data = JSON.parse(msg);
-    if (data.type === "user-info") {
-      // Save the peer user info to your DB
-      await auth.db.saveUser(data.user);
-      // Create or open a chat with this user
-      let conversation = await chat.getConversationWith(data.user.phone);
-      if (!conversation) {
+
+    // Replace this block with the improved version:
+    if (data.type === "user-info" && data.user) {
+      await auth.db.addUser(data.user); // Save peer user to local DB
+      let conversation = chat.getConversationWith
+        ? await chat.getConversationWith(data.user.phone)
+        : null;
+      if (!conversation && chat.createConversation) {
         conversation = await chat.createConversation(data.user.phone);
       }
-      openChat(conversation.id, "conversation");
+      if (conversation) openChat(conversation.id, "conversation");
       return;
     }
 
     // Handle incoming chat messages
-    const { chatId, content, sender } = JSON.parse(msg);
-    await chat.sendMessage(chatId, content); // Save to local DB
-
-    // If the user is currently viewing this chat, update the UI
-    const chatContainer = document.getElementById("chatContainer");
-    if (chatContainer && chatContainer.innerHTML.includes(chatId)) {
-      const updatedMessages = await chat.db.getMessages(chatId);
-      renderMessages(updatedMessages);
+    if (data.chatId && data.content) {
+      await chat.sendMessage(data.chatId, data.content);
+      const chatContainer = document.getElementById("chatContainer");
+      if (chatContainer && chatContainer.innerHTML.includes(data.chatId)) {
+        const updatedMessages = await chat.db.getMessages(data.chatId);
+        renderMessages(updatedMessages);
+      }
     }
   } catch (e) {
     console.error("Peer message error:", e);
   }
 });
 
-// Helper for Chat class: getConversationWith
-// Add this method to your Chat class (in chat.js):
-// async getConversationWith(phone) {
-//   const conversations = await this.getConversations();
-//   return conversations.find(conv => conv.participants.includes(phone));
-// }
+// Start the application
+initApp();

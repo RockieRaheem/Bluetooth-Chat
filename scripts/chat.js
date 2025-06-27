@@ -115,4 +115,9 @@ export class Chat {
       group.participants.includes(currentUser.phone)
     );
   }
+
+  async getConversationWith(phone) {
+    const conversations = await this.getConversations();
+    return conversations.find((conv) => conv.participants.includes(phone));
+  }
 }
