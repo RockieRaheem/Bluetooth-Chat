@@ -6,10 +6,23 @@ const rtcConfig = {
   ]
 };
 
+function handleDataChannelEvents(channel) {
+  channel.onopen = () => {
+    console.log("Data channel open!");
+    // You can call a callback or update the UI here
+    if (onMessageCallback) onMessageCallback("__CONNECTED__");
+  };
+  channel.onclose = () => {
+    console.log("Data channel closed!");
+  };
+}
+
+// In createOffer:
 export async function createOffer(setOffer) {
   localConnection = new RTCPeerConnection(rtcConfig);
   dataChannel = localConnection.createDataChannel("chat");
   dataChannel.onmessage = (e) => onMessageCallback && onMessageCallback(e.data);
+  handleDataChannelEvents(dataChannel);
 
   await localConnection.setLocalDescription(await localConnection.createOffer());
 
@@ -22,12 +35,13 @@ export async function createOffer(setOffer) {
   });
 }
 
+// In receiveOffer:
 export async function receiveOffer(offerString, setAnswer) {
   remoteConnection = new RTCPeerConnection(rtcConfig);
   remoteConnection.ondatachannel = (event) => {
     dataChannel = event.channel;
-    dataChannel.onmessage = (e) =>
-      onMessageCallback && onMessageCallback(e.data);
+    dataChannel.onmessage = (e) => onMessageCallback && onMessageCallback(e.data);
+    handleDataChannelEvents(dataChannel);
   };
 
   const offer = JSON.parse(offerString);
