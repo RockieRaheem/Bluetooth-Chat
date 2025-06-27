@@ -602,12 +602,15 @@ async function openChat(chatId, chatType) {
         const content = messageInput.value.trim();
         if (content) {
           try {
-            await chat.sendMessage(chatId, content);
+            // Generate a unique message ID
+            const messageId = `${chatId}-${Date.now()}-${Math.random()}`;
+            await chat.sendMessage(chatId, content, auth.getCurrentUser().phone, messageId);
             webrtc.sendPeerMessage(
               JSON.stringify({
                 chatId,
                 content,
                 sender: auth.getCurrentUser().phone,
+                messageId,
               })
             );
             messageInput.value = "";
@@ -749,7 +752,7 @@ webrtc.setOnMessage(async (msg) => {
 
     // Handle incoming chat messages
     if (data.chatId && data.content) {
-      await chat.sendMessage(data.chatId, data.content);
+      await chat.sendMessage(data.chatId, data.content, data.sender, data.messageId);
       const chatContainer = document.getElementById("chatContainer");
       if (chatContainer && chatContainer.innerHTML.includes(data.chatId)) {
         const updatedMessages = await chat.db.getMessages(data.chatId);

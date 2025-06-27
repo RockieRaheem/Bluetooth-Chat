@@ -127,6 +127,16 @@ export class Database {
     });
   }
 
+  async getMessage(id) {
+    const transaction = this.db.transaction(["messages"], "readonly");
+    const store = transaction.objectStore("messages");
+    return new Promise((resolve, reject) => {
+      const request = store.get(id);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (event) => reject(event.target.error);
+    });
+  }
+
   // Conversation operations
   async addConversation(conversation) {
     const transaction = this.db.transaction(["conversations"], "readwrite");

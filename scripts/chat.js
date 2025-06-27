@@ -40,30 +40,22 @@ export class Chat {
     return conversation;
   }
 
-  async sendMessage(conversationId, content) {
+  async sendMessage(conversationId, content, sender = null, messageId = null) {
     const currentUser = this.auth.getCurrentUser();
-    if (!currentUser) {
-      throw new Error("User not authenticated");
-    }
-
+    const msgSender = sender || currentUser.phone;
+    const id = messageId || `${conversationId}-${Date.now()}-${Math.random()}`;
     const message = {
+      id,
       conversationId,
-      sender: currentUser.phone,
+      sender: msgSender,
       content,
       timestamp: new Date().toISOString(),
-      read: false,
     };
-
-    await this.db.addMessage(message);
-
-    // Update conversation last message
-    const conversation = await this.db.getConversation(conversationId);
-    if (conversation) {
-      conversation.lastMessage = content;
-      conversation.lastMessageTime = message.timestamp;
-      await this.db.addConversation(conversation); // Overwrite existing
+    // Check if message already exists
+    const existing = await this.db.getMessage(id);
+    if (!existing) {
+      await this.db.addMessage(message);
     }
-
     return message;
   }
 
