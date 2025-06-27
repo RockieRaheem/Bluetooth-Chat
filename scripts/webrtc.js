@@ -1,7 +1,13 @@
 let localConnection, remoteConnection, dataChannel, onMessageCallback;
 
+const rtcConfig = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" }
+  ]
+};
+
 export async function createOffer(setOffer) {
-  localConnection = new RTCPeerConnection();
+  localConnection = new RTCPeerConnection(rtcConfig);
   dataChannel = localConnection.createDataChannel("chat");
   dataChannel.onmessage = (e) => onMessageCallback && onMessageCallback(e.data);
 
@@ -15,7 +21,7 @@ export async function createOffer(setOffer) {
 }
 
 export async function receiveOffer(offerString, setAnswer) {
-  remoteConnection = new RTCPeerConnection();
+  remoteConnection = new RTCPeerConnection(rtcConfig);
   remoteConnection.ondatachannel = (event) => {
     dataChannel = event.channel;
     dataChannel.onmessage = (e) =>
